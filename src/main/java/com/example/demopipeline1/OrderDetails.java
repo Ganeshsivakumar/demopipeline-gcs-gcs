@@ -1,6 +1,8 @@
 package com.example.demopipeline1;
 
-public class OrderDetails {
+import java.io.Serializable;
+
+public class OrderDetails implements Serializable {
     private String customerId;
     private String firstName;
     private String lastName;
