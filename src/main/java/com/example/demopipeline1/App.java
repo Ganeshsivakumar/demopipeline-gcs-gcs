@@ -51,39 +51,46 @@ public class App {
                 .fromQuery("SELECT * FROM `javaproject-432206.demo.product` WHERE quantity = 2;")
                 .usingStandardSql())
                 .apply("Transform Bq data", ParDo.of(new BqDataTransformer()))
-                .setCoder(SerializableCoder.of(OrderDetails.class))
-                .apply(JdbcIO.<OrderDetails>write()
-                        .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(
-                                "org.postgresql.Driver",
-                                "jdbc:postgresql://host:5432/postgres")
-                                .withUsername("postgres")
-                                .withPassword("pass"))
-                        .withStatement(
-                                "INSERT INTO product_orders (customer_id, first_name, last_name, email, order_id, product_id, product_name, quantity, price, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
-                        .withPreparedStatementSetter(new JdbcIO.PreparedStatementSetter<OrderDetails>() {
-                            @Override
-                            public void setParameters(OrderDetails details,
-                                    PreparedStatement statement) {
-                                try {
-                                    statement.setString(1, details.getCustomerId());
-                                    statement.setString(2, details.getFirstName());
-                                    statement.setString(3, details.getLastName());
-                                    statement.setString(4, details.getEmail());
-                                    statement.setString(5, details.getOrderId());
-                                    statement.setString(6, details.getProductId());
-                                    statement.setString(7, details.getProductName());
-                                    statement.setString(8, details.getQuantity());
-                                    statement.setString(9, details.getPrice());
-                                    statement.setString(10, details.getTotal());
-                                } catch (Exception e) {
-                                    System.out.println("error while setting vales " + e.getMessage());
-                                }
-                            }
-                        }));
+                .setCoder(SerializableCoder.of(OrderDetails.class)).apply("upload to pg", ParDo.of(new UplodToPg()));
 
         p.run().waitUntilFinish();
     }
 }
+
+/*
+ * .apply(JdbcIO.<OrderDetails>write()
+ * .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(
+ * "org.postgresql.Driver",
+ * "jdbc:postgresql://10.60.208.3:5432/postgres")
+ * .withUsername("postgres")
+ * .withPassword("P)OtoCHPte]5o+Ge"))
+ * .withStatement(
+ * "INSERT INTO product_orders (customer_id, first_name, last_name, email, order_id, product_id, product_name, quantity, price, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+ * )
+ * .withPreparedStatementSetter(new
+ * JdbcIO.PreparedStatementSetter<OrderDetails>() {
+ * 
+ * @Override
+ * public void setParameters(OrderDetails details,
+ * PreparedStatement statement) {
+ * try {
+ * statement.setString(1, details.getCustomerId());
+ * statement.setString(2, details.getFirstName());
+ * statement.setString(3, details.getLastName());
+ * statement.setString(4, details.getEmail());
+ * statement.setString(5, details.getOrderId());
+ * statement.setString(6, details.getProductId());
+ * statement.setString(7, details.getProductName());
+ * statement.setString(8, details.getQuantity());
+ * statement.setString(9, details.getPrice());
+ * statement.setString(10, details.getTotal());
+ * } catch (Exception e) {
+ * System.out.println("error while setting vales " + e.getMessage());
+ * }
+ * }
+ * }));
+ */
+
 /*
  * .apply(JdbcIO.<OrderDetails>write()
  * .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(
